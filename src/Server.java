@@ -2,39 +2,56 @@ import java.net.*;
 
 public class Server {
 
-    public static void main(String args[])
-            throws Exception {
+    public static void main(String args[]) throws Exception {
+        // Default port number we are going to use for receiving messages
+        int receivePort = 8002;
+        // Default port number we are going to use for sending responses
+        int sendPort = 8003;
 
-        // Default port number we are going to use
-        int portnumber = 8001;
-        if (args.length >= 1) {
-            portnumber = Integer.parseInt(args[0]);
-        }
-
-        // Create a MulticastSocket
-        MulticastSocket serverMulticastSocket =
-                new MulticastSocket(portnumber);
-        System.out.println("MulticastSocket is created at port " + portnumber);
+        // Create a MulticastSocket for receiving messages
+        MulticastSocket serverReceiveSocket = new MulticastSocket(receivePort);
+        System.out.println("MulticastSocket for receiving is created at port " + receivePort);
 
         // Determine the IP address of a host, given the host name
-        InetAddress group =
-                InetAddress.getByName("225.4.5.6");
+        InetAddress receiveGroup = InetAddress.getByName("225.4.5.6");
 
-        // getByName- returns IP address of given host
-        serverMulticastSocket.joinGroup(group);
-        System.out.println("joinGroup method is called...");
+        // Join the multicast group for receiving messages
+        serverReceiveSocket.joinGroup(receiveGroup);
+        System.out.println("joinGroup method is called for receiving...");
+
+        // Create a DatagramSocket for sending responses
+        DatagramSocket serverSendSocket = new DatagramSocket();
+        System.out.println("DatagramSocket for sending is created...");
+
         boolean infinite = true;
 
-        // Continually receives data and prints them
+        // Continually receives data and processes them
         while (infinite) {
-            byte buf[] = new byte[1024];
-            DatagramPacket data =
-                    new DatagramPacket(buf, buf.length);
-            serverMulticastSocket.receive(data);
-            String msg =
-                    new String(data.getData()).trim();
-            System.out.println("Message received from client = " + msg);
+            try {
+                byte buf[] = new byte[1024];
+                DatagramPacket data = new DatagramPacket(buf, buf.length);
+                serverReceiveSocket.receive(data);
+                String msg = new String(data.getData()).trim();
+                System.out.println("Message received from client = " + msg);
+
+                // Process the message and calculate the result
+                String result = countSumOrProduct(msg);
+                System.out.println("Sending result to client: " + result);
+
+                // Send the result back to the client using the client's address and port
+                DatagramPacket resultPacket = new DatagramPacket(result.getBytes(), result.length(), data.getAddress(), sendPort);
+                serverSendSocket.send(resultPacket);
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
         }
-        serverMulticastSocket.close();
+        serverReceiveSocket.close();
+        serverSendSocket.close();
+    }
+
+    // Counts the sum or product of the message from the client
+    static String countSumOrProduct(String msgFromClient) {
+
+        }
     }
 }

@@ -51,7 +51,29 @@ public class Server {
 
     // Counts the sum or product of the message from the client
     static String countSumOrProduct(String msgFromClient) {
+        if (msgFromClient.length() != 3) {
+            return "Invalid format";
+        }
 
+        try {
+            String num1 = msgFromClient.substring(0, 1);
+            String operator = msgFromClient.substring(1, 2);
+            String num2 = msgFromClient.substring(2);
+
+            int number1 = Integer.parseInt(num1.trim());
+            int number2 = Integer.parseInt(num2.trim());
+
+            if (operator.equals("+")) {
+                int sum = number1 + number2;
+                return "The sum of " + msgFromClient + " is " + sum;
+            } else if (operator.equals("*")) {
+                int product = number1 * number2;
+                return "The product of " + msgFromClient + " is " + product;
+            } else {
+                return "Invalid operator";
+            }
+        } catch (NumberFormatException e) {
+            return "Invalid numbers";
         }
     }
 }
